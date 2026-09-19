@@ -241,30 +241,31 @@ overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
 draw = ImageDraw.Draw(overlay)
 
 # FT Colors for Routes
-FT_RED = (196, 22, 58, 255)       # FT Claret / Crimson for Northern Sea Route
-FT_NAVY = (15, 84, 140, 255)      # FT Deep Blue for Suez Route
-FT_AMBER = (212, 108, 24, 255)    # FT Burnt Ochre/Amber for Cape Route
+FT_RED = (205, 18, 55, 255)       # Solid FT Claret / Crimson for Northern Sea Route
+FT_NAVY = (12, 80, 142, 255)      # Solid FT Deep Blue for Suez Route
+FT_AMBER = (218, 105, 18, 255)    # Solid FT Burnt Ochre/Amber for Cape Route
 
-# Draw routes with crisp white casing underneath for high legibility
-def draw_cased_route(px_list, color, width=4, casing_width=6):
-    # Casing
-    for i in range(len(px_list) - 1):
-        draw.line([px_list[i], px_list[i+1]], fill=(255, 255, 255, 200), width=casing_width)
-    # Core line
-    for i in range(len(px_list) - 1):
-        draw.line([px_list[i], px_list[i+1]], fill=color, width=width)
+# Draw solid routes with crisp opaque white casing underneath for maximum contrast and solidity
+def draw_cased_route(px_list, color, width=7, casing_width=11):
+    if len(px_list) < 2:
+        return
+    # Continuous opaque white casing
+    draw.line(px_list, fill=(255, 255, 255, 255), width=casing_width, joint="curve")
+    # Continuous solid core line
+    draw.line(px_list, fill=color, width=width, joint="curve")
 
-draw_cased_route(cape_px, FT_AMBER, width=4, casing_width=6)
-draw_cased_route(suez_px, FT_NAVY, width=4, casing_width=6)
-draw_cased_route(nsr_px, FT_RED, width=5, casing_width=7)
+# Draw in order: Cape -> Suez -> Northern Sea Route (NSR on top)
+draw_cased_route(cape_px, FT_AMBER, width=7, casing_width=11)
+draw_cased_route(suez_px, FT_NAVY, width=7, casing_width=11)
+draw_cased_route(nsr_px, FT_RED, width=8, casing_width=12)
 
-# Directional arrows helper
-def draw_arrows(px_list, color, fractions, size=11):
+# Directional arrows helper with solid contrast backing
+def draw_arrows(px_list, color, fractions, size=15):
     for f in fractions:
         idx = int(len(px_list) * f)
-        if idx < len(px_list) - 4:
+        if idx < len(px_list) - 6:
             p1 = px_list[idx]
-            p2 = px_list[idx + 4]
+            p2 = px_list[idx + 6]
             dx = p2[0] - p1[0]
             dy = p2[1] - p1[1]
             dist = math.hypot(dx, dy)
@@ -274,28 +275,35 @@ def draw_arrows(px_list, color, fractions, size=11):
                 tip = p2
                 left_w = (tip[0] - size * ux + size * 0.55 * vx, tip[1] - size * uy + size * 0.55 * vy)
                 right_w = (tip[0] - size * ux - size * 0.55 * vx, tip[1] - size * uy - size * 0.55 * vy)
+                
+                # Solid white backing for the arrowhead
+                b_tip = (tip[0] + 2.0 * ux, tip[1] + 2.0 * uy)
+                b_left = (tip[0] - (size + 3) * ux + (size + 3) * 0.65 * vx, tip[1] - (size + 3) * uy + (size + 3) * 0.65 * vy)
+                b_right = (tip[0] - (size + 3) * ux - (size + 3) * 0.65 * vx, tip[1] - (size + 3) * uy - (size + 3) * 0.65 * vy)
+                draw.polygon([b_tip, b_left, b_right], fill=(255, 255, 255, 255))
                 draw.polygon([tip, left_w, right_w], fill=color)
 
-draw_arrows(nsr_px, FT_RED, [0.08, 0.22, 0.48, 0.70, 0.88], size=11)
-draw_arrows(suez_px, FT_NAVY, [0.15, 0.45, 0.75], size=10)
-draw_arrows(cape_px, FT_AMBER, [0.18, 0.42, 0.65, 0.85], size=10)
+draw_arrows(nsr_px, FT_RED, [0.08, 0.22, 0.48, 0.70, 0.88], size=15)
+draw_arrows(suez_px, FT_NAVY, [0.15, 0.45, 0.75], size=14)
+draw_arrows(cape_px, FT_AMBER, [0.18, 0.42, 0.65, 0.85], size=14)
 
 # 5. Route Ports and Markers
 # Jakarta
 xj, yj, _ = ortho_project(106.88, -6.10)
 pxj, pyj = to_pixel(xj, yj)
-draw.ellipse([pxj - 9, pyj - 9, pxj + 9, pyj + 9], fill=(255, 255, 255, 255), outline=FT_RED, width=3)
-draw.ellipse([pxj - 4, pyj - 4, pxj + 4, pyj + 4], fill=FT_NAVY)
+draw.ellipse([pxj - 12, pyj - 12, pxj + 12, pyj + 12], fill=(255, 255, 255, 255), outline=(30, 30, 35), width=3)
+draw.ellipse([pxj - 6, pyj - 6, pxj + 6, pyj + 6], fill=FT_RED)
 
 # Cape of Good Hope waypoint
 xcape, ycape, _ = ortho_project(18.5, -34.5)
 pxcape, pycape = to_pixel(xcape, ycape)
-draw.ellipse([pxcape - 6, pycape - 6, pxcape + 6, pycape + 6], fill=FT_AMBER, outline=(255, 255, 255, 255), width=2)
+draw.ellipse([pxcape - 8, pycape - 8, pxcape + 8, pycape + 8], fill=FT_AMBER, outline=(255, 255, 255, 255), width=3)
 
 # Teesport, UK
 xuk, yuk, _ = ortho_project(-1.15, 54.60)
 pxuk, pyuk = to_pixel(xuk, yuk)
-draw.ellipse([pxuk - 8, pyuk - 8, pxuk + 8, pyuk + 8], fill=(255, 255, 255, 255), outline=FT_RED, width=3)
+draw.ellipse([pxuk - 11, pyuk - 11, pxuk + 11, pyuk + 11], fill=(255, 255, 255, 255), outline=FT_RED, width=4)
+draw.ellipse([pxuk - 5, pyuk - 5, pxuk + 5, pyuk + 5], fill=(30, 30, 35))
 
 # Fonts
 font_brand = ImageFont.truetype("arialbd.ttf", 15)

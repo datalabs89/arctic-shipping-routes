@@ -180,26 +180,23 @@ NSR_COLOR = (248, 135, 45, 255)       # Orange
 SUEZ_COLOR = (75, 155, 235, 240)      # Steel Blue
 CAPE_COLOR = (245, 185, 35, 250)      # Amber / Gold
 
-# 4A. Draw Route Lines
+# 4A. Draw Solid Route Lines
 # Cape Route
-for i in range(len(cape_px) - 1):
-    draw.line([cape_px[i], cape_px[i+1]], fill=CAPE_COLOR, width=4)
+draw.line(cape_px, fill=CAPE_COLOR, width=7, joint="curve")
 
 # Suez Route
-for i in range(len(suez_px) - 1):
-    draw.line([suez_px[i], suez_px[i+1]], fill=SUEZ_COLOR, width=4)
+draw.line(suez_px, fill=SUEZ_COLOR, width=7, joint="curve")
 
-# Northern Sea Route
-for i in range(len(nsr_px) - 1):
-    draw.line([nsr_px[i], nsr_px[i+1]], fill=NSR_COLOR, width=5)
+# Northern Sea Route (on top)
+draw.line(nsr_px, fill=NSR_COLOR, width=8, joint="curve")
 
-# Directional arrows helper
-def draw_arrows(px_list, color, fractions, size=11):
+# Directional arrows helper with solid contrast outline
+def draw_arrows(px_list, color, fractions, size=15):
     for f in fractions:
         idx = int(len(px_list) * f)
-        if idx < len(px_list) - 4:
+        if idx < len(px_list) - 6:
             p1 = px_list[idx]
-            p2 = px_list[idx + 4]
+            p2 = px_list[idx + 6]
             dx = p2[0] - p1[0]
             dy = p2[1] - p1[1]
             dist = math.hypot(dx, dy)
@@ -209,28 +206,35 @@ def draw_arrows(px_list, color, fractions, size=11):
                 tip = p2
                 left_w = (tip[0] - size * ux + size * 0.55 * vx, tip[1] - size * uy + size * 0.55 * vy)
                 right_w = (tip[0] - size * ux - size * 0.55 * vx, tip[1] - size * uy - size * 0.55 * vy)
+                
+                # Solid dark backing outline for high visibility in dark mode
+                b_tip = (tip[0] + 2.0 * ux, tip[1] + 2.0 * uy)
+                b_left = (tip[0] - (size + 3) * ux + (size + 3) * 0.65 * vx, tip[1] - (size + 3) * uy + (size + 3) * 0.65 * vy)
+                b_right = (tip[0] - (size + 3) * ux - (size + 3) * 0.65 * vx, tip[1] - (size + 3) * uy - (size + 3) * 0.65 * vy)
+                draw.polygon([b_tip, b_left, b_right], fill=(0, 0, 0, 240))
                 draw.polygon([tip, left_w, right_w], fill=color)
 
-draw_arrows(nsr_px, NSR_COLOR, [0.08, 0.22, 0.48, 0.70, 0.88], size=11)
-draw_arrows(suez_px, SUEZ_COLOR, [0.15, 0.45, 0.75], size=10)
-draw_arrows(cape_px, CAPE_COLOR, [0.18, 0.42, 0.65, 0.85], size=10)
+draw_arrows(nsr_px, NSR_COLOR, [0.08, 0.22, 0.48, 0.70, 0.88], size=15)
+draw_arrows(suez_px, SUEZ_COLOR, [0.15, 0.45, 0.75], size=14)
+draw_arrows(cape_px, CAPE_COLOR, [0.18, 0.42, 0.65, 0.85], size=14)
 
 # 5. Route Ports and Markers
 # Jakarta
 xj, yj, _ = ortho_project(106.88, -6.10)
 pxj, pyj = to_pixel(xj, yj)
-draw.ellipse([pxj - 10, pyj - 10, pxj + 10, pyj + 10], fill=(255, 255, 255), outline=(10, 15, 20), width=2)
+draw.ellipse([pxj - 12, pyj - 12, pxj + 12, pyj + 12], fill=(255, 255, 255), outline=(10, 15, 20), width=3)
 draw.ellipse([pxj - 6, pyj - 6, pxj + 6, pyj + 6], fill=NSR_COLOR, outline=SUEZ_COLOR, width=2)
 
 # Cape of Good Hope waypoint
 xcape, ycape, _ = ortho_project(18.5, -34.5)
 pxcape, pycape = to_pixel(xcape, ycape)
-draw.ellipse([pxcape - 6, pycape - 6, pxcape + 6, pycape + 6], fill=CAPE_COLOR, outline=(255, 255, 255), width=2)
+draw.ellipse([pxcape - 8, pycape - 8, pxcape + 8, pycape + 8], fill=CAPE_COLOR, outline=(255, 255, 255), width=3)
 
 # Teesport, UK
 xuk, yuk, _ = ortho_project(-1.15, 54.60)
 pxuk, pyuk = to_pixel(xuk, yuk)
-draw.ellipse([pxuk - 8, pyuk - 8, pxuk + 8, pyuk + 8], fill=(255, 255, 255), outline=NSR_COLOR, width=3)
+draw.ellipse([pxuk - 11, pyuk - 11, pxuk + 11, pyuk + 11], fill=(255, 255, 255), outline=NSR_COLOR, width=4)
+draw.ellipse([pxuk - 5, pyuk - 5, pxuk + 5, pyuk + 5], fill=(10, 15, 20))
 
 # Helper for text with shadow
 WHITE = (255, 255, 255, 255)
