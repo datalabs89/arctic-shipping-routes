@@ -10,17 +10,40 @@ Inspired by Pablo Robles' (*The New York Times*) 3D globe cartography using the 
 
 ---
 
-## 🌍 Map Visualizations
+---
 
-### 📰 1. Editorial Light — Financial Times Style
-Signature warm salmon paper (`#FFF1E5`), soft pastel blue oceans, muted slate terrain relief, delicate graticule grid lines, and high-contrast editorial route lines.
+## 🌍 Map & Infographic Visualizations
+
+### 📰 1. Storytelling Infographic Report (Financial Times Style)
+Widescreen editorial broadsheet infographic featuring integrated narrative storytelling cards, key geoeconomic insights, cross-corridor benchmark pillars, and clean 3D orthographic globe cartography.
+
+![The Equatorial Dilemma Storytelling Infographic](arctic_shipping_infographic_ft.png)
+
+### 🗺️ 2. Clean Cartographic Map — FT Style
+Light & warm paper edition (`#FFF1E5`) with pure solid vector route lines, soft pastel blue oceans, and subtle 30° graticule grid lines.
 
 ![Financial Times Style Map](arctic_shipping_route_ft.png)
 
-### 🌌 2. Editorial Dark — Pablo Robles / NYT Style
-Deep space dark theme (`#06080B`), atmospheric limb glow, high-contrast neon vector route ribbons, and semi-transparent glassmorphism metric cards.
+### 🌌 3. Clean Cartographic Map — Dark Style
+Deep space dark theme (`#06080B`) with high-contrast vector route ribbons and dark glassmorphism metric cards.
 
 ![Editorial Dark Map](arctic_shipping_route_globe.png)
+
+---
+
+## 💡 Key Insights Highlighted on the Infographics
+
+### 1. 📌 The Distance Paradox (Zero Nautical Mile Gain)
+While the Arctic Northern Sea Route cuts voyage distances by up to 4,000 nm (~35%) for ports in China and Japan, departing from **Jakarta, Indonesia yields ZERO distance savings over the Suez Canal (both ~8,400 nm)**. Vessels must sail over 3,500 nm northward through the South China Sea and Sea of Japan simply to reach the Arctic entrance at the Bering Strait.
+
+### 2. 📌 The Red Sea Security Dilemma
+The Suez corridor remains Southeast Asia's fastest direct highway (**28–32 days** at standard cruising). However, drone and missile threats in the Bab-el-Mandeb Strait have surged war-risk insurance premiums to nearly 1% of hull value, forcing carriers to choose between extreme risk and massive logistical delays.
+
+### 3. 📌 The Cape Diversion Penalty
+Diverting south of Africa completely avoids Middle Eastern flashpoints but exacts a staggering logistical penalty: **adds +3,200 nautical miles (+38% distance) and +10 to 14 extra transit days**. Vessels consume ~35–40% more bunker fuel and must navigate violent *Roaring Forties* swells off South Africa.
+
+### 4. 📌 The 90-Day Seasonal Trap
+Despite global warming, commercial NSR navigation without dedicated nuclear icebreakers is limited to a brief **summer window (July to October)**. Operating in polar waters mandates specialized Arc4/Arc7 ice-strengthened hulls and Russian icebreaker escort fees, canceling out theoretical operational savings.
 
 ---
 
@@ -72,11 +95,13 @@ To depict both the Arctic high latitudes and the southern tip of Africa simultan
 ## 📁 Repository Structure
 
 ```text
-├── README.md                           # Documentation & analytical breakdown
+├── README.md                           # Documentation, storytelling & analytical breakdown
+├── arctic_shipping_infographic_ft.png  # Storytelling infographic poster with key insights (2700 x 1920)
 ├── arctic_shipping_route_ft.png        # Financial Times broadsheet style rendered map (2412 x 1756)
 ├── arctic_shipping_route_globe.png     # Editorial dark style rendered 3D globe map (2412 x 1756)
 ├── arctic_shipping_route.qgs           # Native QGIS project with pre-configured layers & symbology
-├── build_map_ft.py                     # Financial Times style cartographic renderer
+├── build_infographic_ft.py             # Storytelling infographic generator with insight callouts
+├── build_map_ft.py                     # Financial Times clean style cartographic renderer
 ├── build_map.py                        # Editorial dark style cartographic renderer
 ├── create_qgis_project.py              # Script generating the native QGIS project via PyQGIS
 ├── cape_route.geojson                  # GeoJSON linestring: Jakarta → Cape of Good Hope → UK
@@ -98,12 +123,16 @@ To depict both the Arctic high latitudes and the southern tip of Africa simultan
   pip install pillow numpy
   ```
 
-### Generate the Maps
-* **Financial Times Style (Light & Warm Paper):**
+### Generate the Visualizations
+* **Storytelling Infographic Report (with Narrative Cards & Insights):**
+  ```bash
+  python build_infographic_ft.py
+  ```
+* **Clean Financial Times Map (Light & Warm Paper):**
   ```bash
   python build_map_ft.py
   ```
-* **Editorial Dark Style (NYT / Deep Space):**
+* **Editorial Dark Style Map (NYT / Deep Space):**
   ```bash
   python build_map.py
   ```
