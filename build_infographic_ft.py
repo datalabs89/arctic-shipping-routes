@@ -10,7 +10,6 @@ os.makedirs(out_dir, exist_ok=True)
 artifact_dir = r"C:\Users\User\.gemini\antigravity-cli\brain\d707f0b4-74df-4408-8b6b-21491274467b"
 
 # 1. Canvas and Globe Geometry
-# Elegant widescreen editorial infographic layout
 WIDTH = 2700
 HEIGHT = 1920
 CX = 1445
@@ -41,8 +40,8 @@ def ortho_project(lon, lat):
 def to_pixel(x, y):
     return CX + x * RADIUS, CY - y * RADIUS
 
-# 2. Build FT Earth Texture
-print("Rendering Financial Times Earth texture...")
+# 2. Build Earth Texture
+print("Rendering editorial Earth texture...")
 img_topo = Image.open(os.path.join(out_dir, "land_topo_2048.jpg")).convert("RGB")
 img_winter = Image.open(os.path.join(out_dir, "earth_5400.jpg")).resize(img_topo.size).convert("RGB")
 
@@ -85,31 +84,31 @@ winter_brightness = (sampled_winter[:, :, 0] + sampled_winter[:, :, 1] + sampled
 is_snow = winter_brightness > 130
 effective_ice_weight = ice_weight * np.where(is_snow, 1.0, 0.20)
 
-# Colors
-FT_BG = np.array([255, 241, 229], dtype=np.float32)       # #FFF1E5
-FT_OCEAN = np.array([214, 229, 238], dtype=np.float32)    # #D6E5EE
-FT_LAND_BASE = np.array([224, 219, 210], dtype=np.float32)# #E0DBD2
-FT_ICE = np.array([248, 250, 252], dtype=np.float32)      # #F8FAFC
+# Editorial Color Palette
+BG_COLOR = np.array([255, 241, 229], dtype=np.float32)       # Warm paper (#FFF1E5)
+OCEAN_COLOR = np.array([214, 229, 238], dtype=np.float32)    # Soft blue (#D6E5EE)
+LAND_BASE = np.array([224, 219, 210], dtype=np.float32)      # Stone (#E0DBD2)
+ICE_COLOR = np.array([248, 250, 252], dtype=np.float32)      # Snow white (#F8FAFC)
 
 land_lum = (sampled_topo[:, :, 0] * 0.299 + sampled_topo[:, :, 1] * 0.587 + sampled_topo[:, :, 2] * 0.114)
 relief = np.clip(land_lum / 120.0, 0.75, 1.25)
 
-ft_texture = np.zeros((HEIGHT, WIDTH, 3), dtype=np.float32)
+texture = np.zeros((HEIGHT, WIDTH, 3), dtype=np.float32)
 for c in range(3):
-    land_col = FT_LAND_BASE[c] * (0.80 + 0.20 * relief)
-    ocean_col = FT_OCEAN[c] * (0.96 + 0.04 * cos_c)
+    land_col = LAND_BASE[c] * (0.80 + 0.20 * relief)
+    ocean_col = OCEAN_COLOR[c] * (0.96 + 0.04 * cos_c)
     base_val = np.where(is_ocean, ocean_col, land_col)
     blended_val = np.where(effective_ice_weight > 0.05,
-                           base_val * (1.0 - effective_ice_weight) + FT_ICE[c] * effective_ice_weight,
+                           base_val * (1.0 - effective_ice_weight) + ICE_COLOR[c] * effective_ice_weight,
                            base_val)
-    ft_texture[:, :, c] = blended_val
+    texture[:, :, c] = blended_val
 
 globe_shading = np.clip(0.65 + 0.35 * (cos_c**0.25), 0.65, 1.0)
-ft_texture *= globe_shading[:, :, np.newaxis]
+texture *= globe_shading[:, :, np.newaxis]
 
 canvas = np.zeros((HEIGHT, WIDTH, 3), dtype=np.float32)
-canvas[:, :, :] = FT_BG
-canvas[disk_mask] = ft_texture[disk_mask]
+canvas[:, :, :] = BG_COLOR
+canvas[disk_mask] = texture[disk_mask]
 
 base_img = Image.fromarray(np.clip(canvas, 0, 255).astype(np.uint8), mode="RGB")
 
@@ -195,15 +194,15 @@ overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
 draw = ImageDraw.Draw(overlay)
 
 # Route Colors
-FT_RED = (205, 18, 55, 255)       # Northern Sea Route
-FT_NAVY = (12, 80, 142, 255)      # Suez Canal Route
-FT_AMBER = (218, 105, 18, 255)    # Cape of Good Hope Route
+NSR_COLOR = (205, 18, 55, 255)       # Northern Sea Route (Crimson)
+SUEZ_COLOR = (12, 80, 142, 255)      # Suez Canal Route (Deep Navy)
+CAPE_COLOR = (218, 105, 18, 255)     # Cape of Good Hope Route (Burnt Amber)
 
 # Pure Solid Flat Lines (No casing, no glow, no effects)
 ROUTE_WIDTH = 5
-draw.line(cape_px, fill=FT_AMBER, width=ROUTE_WIDTH, joint="curve")
-draw.line(suez_px, fill=FT_NAVY, width=ROUTE_WIDTH, joint="curve")
-draw.line(nsr_px, fill=FT_RED, width=ROUTE_WIDTH, joint="curve")
+draw.line(cape_px, fill=CAPE_COLOR, width=ROUTE_WIDTH, joint="curve")
+draw.line(suez_px, fill=SUEZ_COLOR, width=ROUTE_WIDTH, joint="curve")
+draw.line(nsr_px, fill=NSR_COLOR, width=ROUTE_WIDTH, joint="curve")
 
 # Clean Flat Arrow Chevrons
 def draw_arrows(px_list, color, fractions, size=13):
@@ -222,31 +221,29 @@ def draw_arrows(px_list, color, fractions, size=13):
                 right_w = (tip[0] - size * ux - size * 0.55 * vx, tip[1] - size * uy - size * 0.55 * vy)
                 draw.polygon([tip, left_w, right_w], fill=color)
 
-draw_arrows(nsr_px, FT_RED, [0.08, 0.22, 0.48, 0.70, 0.88], size=13)
-draw_arrows(suez_px, FT_NAVY, [0.15, 0.45, 0.75], size=12)
-draw_arrows(cape_px, FT_AMBER, [0.18, 0.42, 0.65, 0.85], size=12)
+draw_arrows(nsr_px, NSR_COLOR, [0.08, 0.22, 0.48, 0.70, 0.88], size=13)
+draw_arrows(suez_px, SUEZ_COLOR, [0.15, 0.45, 0.75], size=12)
+draw_arrows(cape_px, CAPE_COLOR, [0.18, 0.42, 0.65, 0.85], size=12)
 
 # Port Markers
 xj, yj, _ = ortho_project(106.88, -6.10)
 pxj, pyj = to_pixel(xj, yj)
 draw.ellipse([pxj - 10, pyj - 10, pxj + 10, pyj + 10], fill=(255, 255, 255, 255), outline=(30, 30, 35), width=3)
-draw.ellipse([pxj - 5, pyj - 5, pxj + 5, pyj + 5], fill=FT_RED)
+draw.ellipse([pxj - 5, pyj - 5, pxj + 5, pyj + 5], fill=NSR_COLOR)
 
 xcape, ycape, _ = ortho_project(18.5, -34.5)
 pxcape, pycape = to_pixel(xcape, ycape)
-draw.ellipse([pxcape - 7, pycape - 7, pxcape + 7, pycape + 7], fill=FT_AMBER, outline=(255, 255, 255, 255), width=2)
+draw.ellipse([pxcape - 7, pycape - 7, pxcape + 7, pycape + 7], fill=CAPE_COLOR, outline=(255, 255, 255, 255), width=2)
 
 xuk, yuk, _ = ortho_project(-1.15, 54.60)
 pxuk, pyuk = to_pixel(xuk, yuk)
-draw.ellipse([pxuk - 10, pyuk - 10, pxuk + 10, pyuk + 10], fill=(255, 255, 255, 255), outline=FT_RED, width=3)
+draw.ellipse([pxuk - 10, pyuk - 10, pxuk + 10, pyuk + 10], fill=(255, 255, 255, 255), outline=NSR_COLOR, width=3)
 draw.ellipse([pxuk - 4, pyuk - 4, pxuk + 4, pyuk + 4], fill=(30, 30, 35))
 
 # 5. Typography Definitions
-font_brand = ImageFont.truetype("arialbd.ttf", 15)
 font_kicker = ImageFont.truetype("arialbd.ttf", 15)
 font_title = ImageFont.truetype("georgiab.ttf", 36)
 font_subtitle = ImageFont.truetype("georgia.ttf", 19)
-font_section_h1 = ImageFont.truetype("georgiab.ttf", 22)
 font_section_h2 = ImageFont.truetype("georgiab.ttf", 18)
 font_body = ImageFont.truetype("arial.ttf", 15)
 font_body_bold = ImageFont.truetype("arialbd.ttf", 15)
@@ -258,125 +255,102 @@ font_country = ImageFont.truetype("georgiab.ttf", 20)
 font_country_large = ImageFont.truetype("georgiab.ttf", 26)
 font_water = ImageFont.truetype("georgiai.ttf", 17)
 
-# 6. Top Header Banner (Classic FT Broadsheet style)
-draw.text((70, 45), "FINANCIAL TIMES", font=font_brand, fill=(155, 35, 50, 255))
-draw.line([(70, 70), (480, 70)], fill=(185, 160, 145, 255), width=1)
-draw.text((70, 82), "INFOGRAPHIC REPORT • GLOBAL MARITIME GEOPOLITICS", font=font_kicker, fill=(120, 95, 80, 255))
-draw.text((70, 106), "The Equatorial Dilemma: Jakarta to Europe Shipping Routes", font=font_title, fill=(20, 20, 25, 255))
-draw.text((70, 154), "Evaluating transit speed, geopolitical risks, and economic realities across the Arctic, Suez, and the Cape of Good Hope", font=font_subtitle, fill=(85, 75, 70, 255))
-draw.line([(70, 192), (WIDTH - 70, 192)], fill=(210, 190, 175, 255), width=2)
+# 6. Top Header Banner
+draw.text((70, 48), "GLOBAL MARITIME LOGISTICS & GEOECONOMIC INTELLIGENCE", font=font_kicker, fill=(135, 95, 80, 255))
+draw.text((70, 76), "The Equatorial Dilemma: Jakarta to Europe Shipping Corridors", font=font_title, fill=(20, 20, 25, 255))
+draw.text((70, 126), "A comparative evaluation of navigational efficiency, chokepoint vulnerabilities, and operational economics across three global routes", font=font_subtitle, fill=(85, 75, 70, 255))
+draw.line([(70, 168), (WIDTH - 70, 168)], fill=(210, 190, 175, 255), width=2)
 
 # Helper to draw Storytelling Insight Panels
-def draw_story_card(pos, tag, title, body_paragraphs, accent_color, width=640, height=270):
+def draw_story_card(pos, tag, title, body_paragraphs, accent_color, width=640, height=235):
     x, y = pos
-    # Card base
     draw.rounded_rectangle([x, y, x + width, y + height], radius=6,
                            fill=(255, 255, 255, 245), outline=(215, 195, 180, 255), width=1)
-    # Left accent bar
     draw.rounded_rectangle([x, y, x + 6, y + height], radius=3, fill=accent_color)
     
-    # Category Tag Pill
     tag_w = draw.textlength(tag, font=font_tag) + 16
     draw.rounded_rectangle([x + 20, y + 16, x + 20 + tag_w, y + 36], radius=4,
                            fill=accent_color)
     draw.text((x + 28, y + 19), tag, font=font_tag, fill=(255, 255, 255, 255))
     
-    # Title
     draw.text((x + 20, y + 46), title, font=font_section_h2, fill=(20, 20, 25, 255))
     
-    # Paragraph text
     curr_y = y + 78
     for line in body_paragraphs:
         if line.startswith("**"):
-            # Bold highlight line
             draw.text((x + 20, curr_y), line.replace("**", ""), font=font_body_bold, fill=accent_color)
             curr_y += 22
         else:
             draw.text((x + 20, curr_y), line, font=font_body, fill=(65, 60, 55, 255))
             curr_y += 21
 
-# LEFT COLUMN: 4 Storytelling Insight Panels (width=640, x=70)
-# Card 1: The Distance Paradox
+# LEFT COLUMN: 4 Storytelling Insight Panels (No repetitive numbers from right cards)
+# Card 1: The Geographic Reality
 draw_story_card(
-    pos=(70, 220),
-    tag="KEY INSIGHT 1 • THE DISTANCE PARADOX",
-    title="Why the Arctic Thaw Yields Zero Nautical Mile Gain",
+    pos=(70, 195),
+    tag="ANALYSIS 1 • THE LATITUDINAL REALITY",
+    title="Why Equatorial Origin Negates the Arctic Proximity Advantage",
     body_paragraphs=[
-        "For East Asian ports like Shanghai or Yokohama, the Northern Sea Route",
-        "cuts transit by up to 4,000 nm (~35%). However, departing from Jakarta,",
-        "**the NSR offers ZERO distance savings over the Suez Canal (both ~8,400 nm).**",
-        "Indonesian vessels must spend 9–11 days sailing 3,500 nm northward through",
-        "the South China Sea and Sea of Japan just to reach the Arctic entrance."
+        "While polar melting provides northern ports in China and Japan a direct shortcut,",
+        "vessels from Indonesia must spend over a week sailing through the South China Sea",
+        "**and Sea of Japan just to reach the Arctic entrance at the Bering Strait.**",
+        "By the time a ship reaches the ice pack, an equivalent vessel on the western corridor",
+        "is already crossing the Arabian Sea, eliminating any navigational distance benefit."
     ],
-    accent_color=FT_RED,
-    width=640, height=210
+    accent_color=NSR_COLOR,
+    width=640, height=215
 )
 
-# Card 2: The Suez & Red Sea Bottleneck
+# Card 2: The Red Sea Security Surcharge
 draw_story_card(
-    pos=(70, 455),
-    tag="KEY INSIGHT 2 • THE RED SEA DILEMMA",
-    title="Speed vs Security: The Vulnerability of Global Chokepoints",
+    pos=(70, 435),
+    tag="ANALYSIS 2 • CHOKEPOINT VULNERABILITY",
+    title="The Economic Surcharge of Middle Eastern Flashpoints",
     body_paragraphs=[
-        "The Suez corridor remains Southeast Asia's historical maritime highway,",
-        "offering a standard transit of 28–32 days at a steady 14 knots.",
-        "**Escalating security threats near Bab-el-Mandeb have surged insurance costs,**",
-        "forcing container lines to weigh severe war-risk premiums against",
-        "the immense scheduling delays of circumnavigating the African continent."
+        "The passage through the Bab-el-Mandeb Strait exposes modern container vessels",
+        "to asymmetric regional threats, drone strikes, and maritime harassment.",
+        "**Underwriters have levied war-risk insurance surcharges of up to 1% of hull value,**",
+        "confronting global shipping alliances with a stark choice between catastrophic",
+        "vessel liability and the schedule disruption of rounding the African continent."
     ],
-    accent_color=FT_NAVY,
-    width=640, height=210
+    accent_color=SUEZ_COLOR,
+    width=640, height=215
 )
 
-# Card 3: The 12-Day Cape Penalty
+# Card 3: The Southern Ocean Swells
 draw_story_card(
-    pos=(70, 690),
-    tag="KEY INSIGHT 3 • THE CAPE PENALTY",
-    title="Circumnavigation: +3,200 Nautical Miles & +40% Fuel Burn",
+    pos=(70, 675),
+    tag="ANALYSIS 3 • MARITIME WEATHER HAZARDS",
+    title="The Physical Toll of Circumnavigating South Africa",
     body_paragraphs=[
-        "Diverting south of Africa completely bypasses Middle Eastern flashpoints",
-        "but exacts a staggering logistical toll:",
-        "**Adds 10 to 14 extra voyage days and +3,200 nm (+38% total distance).**",
-        "Vessels consume ~40% additional bunker fuel and must navigate violent",
-        "swells and winter gale fronts off the Cape of Good Hope (Roaring Forties)."
+        "The Cape diversion offers complete geopolitical safety but presents severe oceanographic",
+        "challenges around the southern tip of Africa (latitudes 34°S to 36°S).",
+        "**Vessels endure relentless Roaring Forties swells and intense Agulhas current shears,**",
+        "leading to higher hull fatigue, damaged container lashings, and mandatory speed",
+        "reductions alongside an absence of intermediate emergency repair berths."
     ],
-    accent_color=FT_AMBER,
-    width=640, height=210
+    accent_color=CAPE_COLOR,
+    width=640, height=215
 )
 
-# Card 4: The 90-Day Seasonal Trap
+# Card 4: Polar Commercial Viability
 draw_story_card(
-    pos=(70, 925),
-    tag="KEY INSIGHT 4 • THE OPERATIONAL WINDOW",
-    title="The Arctic Fallacy: A 90-Day Window with Ice Escort Fees",
+    pos=(70, 915),
+    tag="ANALYSIS 4 • POLAR FLEET ECONOMICS",
+    title="Institutional & Governance Barriers along the Siberian Coast",
     body_paragraphs=[
-        "While polar ice cap melt captures headlines, commercial NSR transit is",
-        "restricted to a brief summer window (July–October).",
-        "**Transit requires specialized Arc4/Arc7 ice-class hulls & Rosatomflot fees,**",
-        "canceling out operational savings. For equatorial supply chains, Suez and",
-        "the Cape remain the only reliable, year-round maritime options."
+        "Beyond climatic limitations, commercial operations along the Russian Northern Sea Route",
+        "require adherence to the Northern Sea Route Administration (NSRA) framework.",
+        "**Mandatory Russian nuclear icebreaker booking fees and stringent Western sanctions**",
+        "restrict international carrier participation, confining the corridor predominantly to",
+        "domestic Russian Arctic hydrocarbon logistics rather than regular liner shipping."
     ],
-    accent_color=(140, 40, 80, 255),
-    width=640, height=210
+    accent_color=(135, 35, 75, 255),
+    width=640, height=215
 )
 
-# LEFT COLUMN SUMMARY: Strategic Takeaways Box
-draw.rounded_rectangle([70, 1160, 710, 1430], radius=6, fill=(248, 243, 235, 255), outline=(205, 185, 170, 255), width=1)
-draw.text((95, 1180), "STRATEGIC LOGISTICS TAKEAWAYS", font=font_section_h2, fill=(25, 25, 30, 255))
-draw.line([(95, 1208), (685, 1208)], fill=(210, 190, 175, 255), width=1)
-takeaways = [
-    ("• Standard Baseline:", "Suez Route is optimum for speed (28–32 d) when secure."),
-    ("• Crisis Buffer:", "Cape Route adds 12 days & +$1M+ in fuel per round-trip."),
-    ("• Arctic Reality:", "NSR is non-viable for Jakarta year-round container loops.")
-]
-ty = 1225
-for label, desc in takeaways:
-    draw.text((95, ty), label, font=font_body_bold, fill=(20, 20, 25, 255))
-    draw.text((250, ty), desc, font=font_body, fill=(75, 70, 65, 255))
-    ty += 32
-
-# RIGHT COLUMN: Route Metric Cards (x=2170 to 2630, width=460)
-def draw_route_card(pos, title, metrics, badge_color, width=460, height=195):
+# RIGHT COLUMN: Single Source of Truth for Route Specifications (x=2170, width=460)
+def draw_route_card(pos, title, metrics, badge_color, width=460, height=205):
     x, y = pos
     draw.rounded_rectangle([x, y, x + width, y + height], radius=6,
                            fill=(255, 255, 255, 248), outline=(215, 195, 180, 255), width=1)
@@ -389,66 +363,66 @@ def draw_route_card(pos, title, metrics, badge_color, width=460, height=195):
     for label, val, is_alert in metrics:
         draw.text((x + 20, curr_y), label, font=font_body, fill=(105, 95, 90, 255))
         val_color = badge_color if is_alert else (25, 25, 30, 255)
-        draw.text((x + 130, curr_y), val, font=font_body_bold, fill=val_color)
+        draw.text((x + 125, curr_y), val, font=font_body_bold, fill=val_color)
         curr_y += 26
 
 # Right Card 1: NSR
 draw_route_card(
-    pos=(2170, 220),
+    pos=(2170, 195),
     title="Northern Sea Route (NSR)",
     metrics=[
-        ("Total Distance:", "± 8,400 nm (~15,550 km)", False),
-        ("Est. Transit:", "± 27 – 30 Days", False),
-        ("Navigability:", "July – Oct (90-Day Window)", True),
-        ("Key Chokepoint:", "Bering & Vilkitsky Straits (Ice floes)", False),
-        ("Economic Cost:", "Arc-hull premium + Icebreaker fees", False)
+        ("Distance:", "± 8,400 nm (~15,550 km)", False),
+        ("Est. Transit:", "± 27 – 30 Days (Summer Window)", False),
+        ("Seasonality:", "July – October (90-day window)", True),
+        ("Chokepoint:", "Bering & Vilkitsky Straits (Ice floes)", False),
+        ("Fleet Specs:", "Arc4 / Arc7 Ice-Class Strengthened Hull", False)
     ],
-    badge_color=FT_RED,
+    badge_color=NSR_COLOR,
     width=460, height=205
 )
 
 # Right Card 2: Suez
 draw_route_card(
-    pos=(2170, 460),
+    pos=(2170, 430),
     title="Suez Canal Route",
     metrics=[
-        ("Total Distance:", "± 8,400 nm (~15,550 km)", False),
-        ("Est. Transit:", "± 28 – 32 Days", False),
-        ("Navigability:", "Year-Round (12 Months)", False),
-        ("Key Chokepoint:", "Bab-el-Mandeb & Suez Canal", True),
-        ("Economic Cost:", "Canal toll tariffs + War risk premiums", False)
+        ("Distance:", "± 8,400 nm (~15,550 km)", False),
+        ("Est. Transit:", "± 28 – 32 Days (Continuous Service)", False),
+        ("Seasonality:", "Year-Round Navigability (12 Months)", False),
+        ("Chokepoint:", "Bab-el-Mandeb Strait & Suez Canal", True),
+        ("Fleet Specs:", "Standard Ocean-Going Commercial Vessels", False)
     ],
-    badge_color=FT_NAVY,
+    badge_color=SUEZ_COLOR,
     width=460, height=205
 )
 
 # Right Card 3: Cape
 draw_route_card(
-    pos=(2170, 700),
+    pos=(2170, 665),
     title="Cape of Good Hope Route",
     metrics=[
-        ("Total Distance:", "± 11,600 nm (+3,200 nm)", True),
-        ("Est. Transit:", "± 38 – 43 Days (+10–14 d)", True),
-        ("Navigability:", "Year-Round (12 Months)", False),
-        ("Key Chokepoint:", "Cape Agulhas & Roaring Forties", False),
-        ("Economic Cost:", "+35–40% Bunker Fuel Consumption", True)
+        ("Distance:", "± 11,600 nm (+38% Distance Penalty)", True),
+        ("Est. Transit:", "± 38 – 43 Days (+10 to 14 Days Delay)", True),
+        ("Seasonality:", "Year-Round Navigability (12 Months)", False),
+        ("Chokepoint:", "Cape Agulhas & Southern Ocean Swells", False),
+        ("Fleet Specs:", "High Bunker Reserves (+40% Fuel Budget)", True)
     ],
-    badge_color=FT_AMBER,
+    badge_color=CAPE_COLOR,
     width=460, height=205
 )
 
-# Right Card 4: Methodological Note
-draw.rounded_rectangle([2170, 940, 2630, 1180], radius=6, fill=(255, 255, 255, 240), outline=(215, 195, 180, 255), width=1)
-draw.text((2190, 960), "CARTOGRAPHIC SPECIFICATIONS", font=font_section_h2, fill=(25, 25, 30, 255))
-draw.line([(2190, 988), (2610, 988)], fill=(210, 190, 175, 255), width=1)
+# Right Card 4: Cartographic & Navigation Modeling Parameters
+draw.rounded_rectangle([2170, 900, 2630, 1150], radius=6, fill=(255, 255, 255, 240), outline=(215, 195, 180, 255), width=1)
+draw.text((2190, 920), "MODELING PARAMETERS", font=font_section_h2, fill=(25, 25, 30, 255))
+draw.line([(2190, 948), (2610, 948)], fill=(210, 190, 175, 255), width=1)
 specs = [
-    ("Projection:", "Azimuthal Orthographic (3D Globe)"),
-    ("Vantage Center:", "30.0° N, 55.0° E"),
+    ("Projection:", "Azimuthal Orthographic (3D Hemisphere)"),
+    ("Vantage Center:", "30.0° N, 55.0° E (Zero Distortion Disc)"),
     ("Origin Port:", "Tanjung Priok, Jakarta (-6.10° S, 106.88° E)"),
     ("Destination:", "Teesport, United Kingdom (54.60° N, -1.15° W)"),
-    ("Speed Model:", "14.5 kts cruising; 9.5 kts ice transit")
+    ("Cruising Speed:", "14.5 kts open sea; 9.5 kts Arctic ice convoy")
 ]
-sy = 1005
+sy = 965
 for label, val in specs:
     draw.text((2190, sy), label, font=font_body_bold, fill=(90, 80, 75, 255))
     draw.text((2310, sy), val, font=font_body, fill=(40, 40, 45, 255))
@@ -456,13 +430,13 @@ for label, val in specs:
 
 # Starting Point: Jakarta Callout
 draw.line([(pxj, pyj), (pxj + 45, pyj + 30), (pxj + 90, pyj + 30)], fill=(40, 40, 45, 255), width=2)
-draw.text((pxj + 100, pyj + 10), "STARTING POINT", font=font_callout_bold, fill=FT_RED)
+draw.text((pxj + 100, pyj + 10), "STARTING POINT", font=font_callout_bold, fill=NSR_COLOR)
 draw.text((pxj + 100, pyj + 30), "Jakarta, Indonesia", font=font_callout_bold, fill=(25, 25, 30, 255))
 draw.text((pxj + 100, pyj + 50), "Port of Tanjung Priok", font=font_callout_sub, fill=(90, 80, 75, 255))
 
 # Destination Point: UK Callout
 draw.line([(pxuk, pyuk), (pxuk - 40, pyuk - 30), (pxuk - 85, pyuk - 30)], fill=(40, 40, 45, 255), width=2)
-draw.text((pxuk - 275, pyuk - 75), "DESTINATION", font=font_callout_bold, fill=FT_RED)
+draw.text((pxuk - 275, pyuk - 75), "DESTINATION", font=font_callout_bold, fill=NSR_COLOR)
 draw.text((pxuk - 275, pyuk - 55), "Teesport, United Kingdom", font=font_callout_bold, fill=(25, 25, 30, 255))
 draw.text((pxuk - 275, pyuk - 35), "Western European Terminal", font=font_callout_sub, fill=(90, 80, 75, 255))
 
@@ -500,53 +474,57 @@ for name, lo, la in waters:
         px, py = to_pixel(x, y)
         draw.text((px - 30, py - 8), name, font=font_water, fill=(65, 105, 135, 220))
 
-# 7. BOTTOM COMPARATIVE STRIP: 3 Comparative Data Pillars
-draw.line([(70, 1475), (WIDTH - 70, 1475)], fill=(210, 190, 175, 255), width=2)
-draw.text((70, 1490), "CROSS-CORRIDOR PERFORMANCE BENCHMARKS (JAKARTA DEPARTURE)", font=font_kicker, fill=(120, 95, 80, 255))
+# 7. BOTTOM COMPARATIVE STRIP: 3 Strategic Pillars
+draw.line([(70, 1465), (WIDTH - 70, 1465)], fill=(210, 190, 175, 255), width=2)
+draw.text((70, 1480), "STRATEGIC DECISION MATRIX • MULTI-CRITERIA CORRIDOR ASSESSMENT", font=font_kicker, fill=(130, 95, 80, 255))
 
 pillar_w = (WIDTH - 140 - 40) // 3
 pillars = [
-    ("🔴 NORTHERN SEA ROUTE (NSR)", FT_RED, [
-        ("Transit Distance:", "± 8,400 nm (Equal to Suez)"),
-        ("Transit Duration:", "± 27 – 30 Days (Fastest in summer)"),
-        ("Primary Feasibility:", "Highly Constrained (July–Oct only)"),
-        ("Bottlenecks / Risks:", "Polar ice floes, Vilkitsky Strait, Russian sanctions"),
-        ("Fleet Requirements:", "Arc4–Arc7 Ice-class hull & mandatory escort")
+    ("1. GEOPOLITICAL & REGULATORY REGIME", (135, 35, 75, 255), [
+        ("• Suez Corridor:", "Multi-state flashpoint; vulnerable to asymmetric drone strikes & regional blockades."),
+        ("• Cape Corridor:", "Unrestricted international waters; maximum geopolitical neutrality under UNCLOS."),
+        ("• Arctic Corridor:", "100% within Russian exclusive jurisdiction; subject to Western sanctions & escort mandates.")
     ]),
-    ("🔵 SUEZ CANAL ROUTE", FT_NAVY, [
-        ("Transit Distance:", "± 8,400 nm (Direct global trunkline)"),
-        ("Transit Duration:", "± 28 – 32 Days (Standard cruising)"),
-        ("Primary Feasibility:", "Year-Round Continuous Service"),
-        ("Bottlenecks / Risks:", "Bab-el-Mandeb drone threats & canal congestion"),
-        ("Fleet Requirements:", "Standard container vessels; high war-risk insurance")
+    ("2. ENVIRONMENTAL & DECARBONIZATION IMPACT", SUEZ_COLOR, [
+        ("• Suez Corridor:", "Lowest baseline CO2 footprint per TEU under normal sailing; zero ice impact."),
+        ("• Cape Corridor:", "+38% gross GHG emissions resulting from 3,200 nm additional marine fuel burn."),
+        ("• Arctic Corridor:", "Black carbon deposition accelerates ice melt; stringent IMO Polar Code compliance.")
     ]),
-    ("🟠 CAPE OF GOOD HOPE ROUTE", FT_AMBER, [
-        ("Transit Distance:", "± 11,600 nm (+38% distance penalty)"),
-        ("Transit Duration:", "± 38 – 43 Days (+10 to 14 days delay)"),
-        ("Primary Feasibility:", "Year-Round Conflict Bypass Route"),
-        ("Bottlenecks / Risks:", "Cape storms, high swell, lack of emergency berths"),
-        ("Fleet Requirements:", "Deep-sea long-range bunker tanks; +40% fuel budget")
+    ("3. SUPPLY CHAIN & CARGO VIABILITY", CAPE_COLOR, [
+        ("• Suez Corridor:", "Essential for time-critical container liner networks, electronics, textiles & retail."),
+        ("• Cape Corridor:", "Best suited for bulk dry commodities, minerals, crude oil, and buffered container loops."),
+        ("• Arctic Corridor:", "Niche seasonal corridor for Siberian LNG & bulk minerals; non-viable for regular liner loops.")
     ])
 ]
 
 px_start = 70
 for p_title, p_col, p_rows in pillars:
-    draw.rounded_rectangle([px_start, 1515, px_start + pillar_w, 1750], radius=6,
+    draw.rounded_rectangle([px_start, 1505, px_start + pillar_w, 1780], radius=6,
                            fill=(255, 255, 255, 245), outline=(215, 195, 180, 255), width=1)
-    draw.rounded_rectangle([px_start, 1515, px_start + pillar_w, 1521], radius=3, fill=p_col)
-    draw.text((px_start + 20, 1532), p_title, font=font_section_h2, fill=p_col)
+    draw.rounded_rectangle([px_start, 1505, px_start + pillar_w, 1511], radius=3, fill=p_col)
+    draw.text((px_start + 20, 1525), p_title, font=font_section_h2, fill=(20, 20, 25, 255))
     
-    ry = 1568
-    for lbl, val in p_rows:
-        draw.text((px_start + 20, ry), lbl, font=font_body_bold, fill=(70, 65, 60, 255))
-        draw.text((px_start + 180, ry), val, font=font_body, fill=(25, 25, 30, 255))
-        ry += 27
+    ry = 1565
+    for lbl, desc in p_rows:
+        draw.text((px_start + 20, ry), lbl, font=font_body_bold, fill=p_col)
+        # Word wrap description
+        words = desc.split()
+        l1, l2 = "", ""
+        for w in words:
+            if len(l1 + " " + w) < 46:
+                l1 = (l1 + " " + w).strip()
+            else:
+                l2 = (l2 + " " + w).strip()
+        draw.text((px_start + 20, ry + 22), l1, font=font_body, fill=(55, 50, 45, 255))
+        if l2:
+            draw.text((px_start + 20, ry + 42), l2, font=font_body, fill=(55, 50, 45, 255))
+        ry += 66
     px_start += pillar_w + 20
 
-# Footer
+# Footer (Clean attribution)
 draw.line([(70, HEIGHT - 55), (WIDTH - 70, HEIGHT - 55)], fill=(210, 190, 175, 255), width=1)
 draw.text((70, HEIGHT - 42), "Sources: International Maritime Organization (IMO), Arctic Institute, Suez Canal Authority, MarineTraffic • Cartography: DataLabs", font=font_callout_sub, fill=(130, 115, 105, 255))
-draw.text((WIDTH - 280, HEIGHT - 42), "FINANCIAL TIMES INFOGRAPHIC", font=font_brand, fill=(155, 35, 50, 255))
+draw.text((WIDTH - 280, HEIGHT - 42), "GEOECONOMIC INTELLIGENCE", font=font_kicker, fill=(135, 95, 80, 255))
 
 final_img = Image.alpha_composite(base_img.convert("RGBA"), overlay)
 

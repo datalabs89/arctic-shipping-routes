@@ -41,8 +41,8 @@ def ortho_project(lon, lat):
 def to_pixel(x, y):
     return CX + x * RADIUS, CY - y * RADIUS
 
-# 2. Build Financial Times Themed Earth
-print("Processing Financial Times style Earth texture...")
+# 2. Build Editorial Broadsheet Themed Earth
+print("Processing Editorial style Earth texture...")
 img_topo = Image.open(os.path.join(out_dir, "land_topo_2048.jpg")).convert("RGB")
 img_winter = Image.open(os.path.join(out_dir, "earth_5400.jpg")).resize(img_topo.size).convert("RGB")
 
@@ -293,13 +293,11 @@ font_card_bold = ImageFont.truetype("arialbd.ttf", 16)
 font_callout_bold = ImageFont.truetype("arialbd.ttf", 18)
 font_callout_sub = ImageFont.truetype("arial.ttf", 15)
 
-# FT Editorial Header Block (Top-Left)
-draw.text((70, 45), "FINANCIAL TIMES", font=font_brand, fill=(155, 35, 50, 255))
-draw.line([(70, 70), (450, 70)], fill=(185, 160, 145, 255), width=1)
-draw.text((70, 82), "GLOBAL TRADE & MARITIME TRANSIT", font=font_kicker, fill=(120, 95, 80, 255))
-draw.text((70, 108), "Shipping Routes from Jakarta to Europe", font=font_main_title, fill=(20, 20, 25, 255))
-draw.text((70, 155), "Comparing distance and voyage duration via the Arctic, Suez Canal, and Cape of Good Hope", font=font_subtitle, fill=(85, 75, 70, 255))
-draw.line([(70, 192), (WIDTH - 70, 192)], fill=(210, 190, 175, 255), width=2)
+# Editorial Header Block (Top-Left)
+draw.text((70, 50), "GLOBAL MARITIME TRANSIT & CARTOGRAPHY", font=font_kicker, fill=(130, 95, 80, 255))
+draw.text((70, 78), "Shipping Routes from Jakarta to Europe", font=font_main_title, fill=(20, 20, 25, 255))
+draw.text((70, 126), "Comparing distance and voyage duration via the Arctic, Suez Canal, and Cape of Good Hope", font=font_subtitle, fill=(85, 75, 70, 255))
+draw.line([(70, 168), (WIDTH - 70, 168)], fill=(210, 190, 175, 255), width=2)
 
 # Helper to draw FT style informational cards
 def draw_ft_card(pos, title, rows, badge_color, width=380, height=130):
@@ -413,7 +411,7 @@ for name, lo, la in waters:
 # Footer
 draw.line([(70, HEIGHT - 55), (WIDTH - 70, HEIGHT - 55)], fill=(210, 190, 175, 255), width=1)
 draw.text((70, HEIGHT - 45), "Sources: IMO, Arctic Institute, Suez Canal Authority, MarineTraffic • Cartography: DataLabs", font=font_callout_sub, fill=(130, 115, 105, 255))
-draw.text((WIDTH - 250, HEIGHT - 45), "FINANCIAL TIMES STYLE", font=font_brand, fill=(155, 35, 50, 255))
+draw.text((WIDTH - 250, HEIGHT - 45), "EDITORIAL BROADSHEET", font=font_brand, fill=(135, 95, 80, 255))
 
 final_img = Image.alpha_composite(base_img.convert("RGBA"), overlay)
 
@@ -423,4 +421,4 @@ final_img.save(out_file, "PNG", quality=95)
 # Copy to artifact dir
 artifact_img_path = os.path.join(artifact_dir, "arctic_shipping_route_ft.png")
 shutil.copyfile(out_file, artifact_img_path)
-print(f"FT-Style map saved to {out_file} and copied to {artifact_img_path}!")
+print(f"Editorial Broadsheet map saved to {out_file} and copied to {artifact_img_path}!")

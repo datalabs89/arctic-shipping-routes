@@ -14,15 +14,15 @@ Inspired by Pablo Robles' (*The New York Times*) 3D globe cartography using the 
 
 ## 🌍 Map & Infographic Visualizations
 
-### 📰 1. Storytelling Infographic Report (Financial Times Style)
+### 📰 1. Storytelling Infographic Report (Editorial Broadsheet Edition)
 Widescreen editorial broadsheet infographic featuring integrated narrative storytelling cards, key geoeconomic insights, cross-corridor benchmark pillars, and clean 3D orthographic globe cartography.
 
 ![The Equatorial Dilemma Storytelling Infographic](arctic_shipping_infographic_ft.png)
 
-### 🗺️ 2. Clean Cartographic Map — FT Style
+### 🗺️ 2. Clean Cartographic Map — Editorial Broadsheet Style
 Light & warm paper edition (`#FFF1E5`) with pure solid vector route lines, soft pastel blue oceans, and subtle 30° graticule grid lines.
 
-![Financial Times Style Map](arctic_shipping_route_ft.png)
+![Editorial Broadsheet Map](arctic_shipping_route_ft.png)
 
 ### 🌌 3. Clean Cartographic Map — Dark Style
 Deep space dark theme (`#06080B`) with high-contrast vector route ribbons and dark glassmorphism metric cards.
@@ -97,11 +97,11 @@ To depict both the Arctic high latitudes and the southern tip of Africa simultan
 ```text
 ├── README.md                           # Documentation, storytelling & analytical breakdown
 ├── arctic_shipping_infographic_ft.png  # Storytelling infographic poster with key insights (2700 x 1920)
-├── arctic_shipping_route_ft.png        # Financial Times broadsheet style rendered map (2412 x 1756)
+├── arctic_shipping_route_ft.png        # Editorial broadsheet style rendered map (2412 x 1756)
 ├── arctic_shipping_route_globe.png     # Editorial dark style rendered 3D globe map (2412 x 1756)
 ├── arctic_shipping_route.qgs           # Native QGIS project with pre-configured layers & symbology
 ├── build_infographic_ft.py             # Storytelling infographic generator with insight callouts
-├── build_map_ft.py                     # Financial Times clean style cartographic renderer
+├── build_map_ft.py                     # Editorial broadsheet clean style cartographic renderer
 ├── build_map.py                        # Editorial dark style cartographic renderer
 ├── create_qgis_project.py              # Script generating the native QGIS project via PyQGIS
 ├── cape_route.geojson                  # GeoJSON linestring: Jakarta → Cape of Good Hope → UK
@@ -128,7 +128,7 @@ To depict both the Arctic high latitudes and the southern tip of Africa simultan
   ```bash
   python build_infographic_ft.py
   ```
-* **Clean Financial Times Map (Light & Warm Paper):**
+* **Clean Editorial Broadsheet Map (Light & Warm Paper):**
   ```bash
   python build_map_ft.py
   ```
