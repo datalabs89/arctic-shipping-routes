@@ -1,0 +1,15 @@
+# QGIS backup files
+*~
+*.qgs~
+
+# Intermediate test renders
+test_*.png
+
+# Python bytecode & caches
+__pycache__/
+*.pyc
+*.pyo
+
+# OS metadata
+.DS_Store
+Thumbs.db

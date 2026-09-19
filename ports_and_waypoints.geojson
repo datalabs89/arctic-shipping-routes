@@ -1,0 +1,69 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jakarta",
+        "port": "Port of Tanjung Priok",
+        "type": "origin",
+        "label": "Jakarta, Indonesia\n(Departed Tanjung Priok)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.88,
+          -6.1
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Teesport",
+        "type": "destination",
+        "route": "NSR",
+        "label": "U.K.\nTeesport Sept. 9"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.15,
+          54.6
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sep 8 Position",
+        "type": "waypoint",
+        "route": "NSR",
+        "label": "Current position\nas of Sep. 8."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.0,
+          71.0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Koper",
+        "type": "destination",
+        "route": "Suez",
+        "label": "Koper, Slovenia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.73,
+          45.55
+        ]
+      }
+    }
+  ]
+}
