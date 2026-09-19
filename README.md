@@ -10,9 +10,17 @@ Inspired by Pablo Robles' (*The New York Times*) 3D globe cartography using the 
 
 ---
 
-## 🌍 Map Overview
+## 🌍 Map Visualizations
 
-![Comparison of 3 Maritime Shipping Routes from Jakarta](arctic_shipping_route_globe.png)
+### 📰 1. Editorial Light — Financial Times Style
+Signature warm salmon paper (`#FFF1E5`), soft pastel blue oceans, muted slate terrain relief, delicate graticule grid lines, and high-contrast editorial route lines.
+
+![Financial Times Style Map](arctic_shipping_route_ft.png)
+
+### 🌌 2. Editorial Dark — Pablo Robles / NYT Style
+Deep space dark theme (`#06080B`), atmospheric limb glow, high-contrast neon vector route ribbons, and semi-transparent glassmorphism metric cards.
+
+![Editorial Dark Map](arctic_shipping_route_globe.png)
 
 ---
 
@@ -65,9 +73,11 @@ To depict both the Arctic high latitudes and the southern tip of Africa simultan
 
 ```text
 ├── README.md                           # Documentation & analytical breakdown
-├── arctic_shipping_route_globe.png     # High-resolution rendered 3D globe map (2412 x 1756)
+├── arctic_shipping_route_ft.png        # Financial Times broadsheet style rendered map (2412 x 1756)
+├── arctic_shipping_route_globe.png     # Editorial dark style rendered 3D globe map (2412 x 1756)
 ├── arctic_shipping_route.qgs           # Native QGIS project with pre-configured layers & symbology
-├── build_map.py                        # Standalone Python cartographic renderer (Pillow & NumPy)
+├── build_map_ft.py                     # Financial Times style cartographic renderer
+├── build_map.py                        # Editorial dark style cartographic renderer
 ├── create_qgis_project.py              # Script generating the native QGIS project via PyQGIS
 ├── cape_route.geojson                  # GeoJSON linestring: Jakarta → Cape of Good Hope → UK
 ├── northern_sea_route.geojson          # GeoJSON linestring: Jakarta → Bering Strait → Arctic → UK
@@ -88,11 +98,15 @@ To depict both the Arctic high latitudes and the southern tip of Africa simultan
   pip install pillow numpy
   ```
 
-### Generate the High-Resolution Globe Map
-```bash
-python build_map.py
-```
-This script computes the orthographic projection per pixel, blends the spherical hillshade and atmospheric halo, plots the densified nautical routes with directional chevron indicators, and renders the informational metric cards.
+### Generate the Maps
+* **Financial Times Style (Light & Warm Paper):**
+  ```bash
+  python build_map_ft.py
+  ```
+* **Editorial Dark Style (NYT / Deep Space):**
+  ```bash
+  python build_map.py
+  ```
 
 ### Open in QGIS
 1. Install [QGIS 3.x or 4.x](https://qgis.org/).
