@@ -103,17 +103,10 @@ canvas_arr[disk_mask] = np.clip(blended_texture[disk_mask], 0, 255).astype(np.ui
 
 base_img = Image.fromarray(canvas_arr, mode="RGB")
 
-# Atmospheric halo
-halo_img = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
-halo_draw = ImageDraw.Draw(halo_img)
-halo_draw.ellipse([CX - RADIUS - 6, CY - RADIUS - 6, CX + RADIUS + 6, CY + RADIUS + 6],
-                  outline=(65, 125, 195, 180), width=8)
-halo_blurred = halo_img.filter(ImageFilter.GaussianBlur(16))
-base_img.paste(halo_blurred, (0, 0), halo_blurred)
-
+# Crisp globe rim (No atmospheric halo effect)
 rim_draw = ImageDraw.Draw(base_img)
 rim_draw.ellipse([CX - RADIUS, CY - RADIUS, CX + RADIUS, CY + RADIUS],
-                 outline=(40, 65, 95), width=2)
+                 outline=(50, 70, 95), width=2)
 
 print("Earth base ready.")
 
@@ -180,23 +173,19 @@ NSR_COLOR = (248, 135, 45, 255)       # Orange
 SUEZ_COLOR = (75, 155, 235, 240)      # Steel Blue
 CAPE_COLOR = (245, 185, 35, 250)      # Amber / Gold
 
-# 4A. Draw Solid Route Lines
-# Cape Route
-draw.line(cape_px, fill=CAPE_COLOR, width=7, joint="curve")
+# 4A. Draw Flat Solid Route Lines (No glow, no casing, no effects)
+ROUTE_WIDTH = 5
+draw.line(cape_px, fill=CAPE_COLOR, width=ROUTE_WIDTH, joint="curve")
+draw.line(suez_px, fill=SUEZ_COLOR, width=ROUTE_WIDTH, joint="curve")
+draw.line(nsr_px, fill=NSR_COLOR, width=ROUTE_WIDTH, joint="curve")
 
-# Suez Route
-draw.line(suez_px, fill=SUEZ_COLOR, width=7, joint="curve")
-
-# Northern Sea Route (on top)
-draw.line(nsr_px, fill=NSR_COLOR, width=8, joint="curve")
-
-# Directional arrows helper with solid contrast outline
-def draw_arrows(px_list, color, fractions, size=15):
+# Directional arrows helper - Clean flat chevrons without backing or outlines
+def draw_arrows(px_list, color, fractions, size=13):
     for f in fractions:
         idx = int(len(px_list) * f)
-        if idx < len(px_list) - 6:
+        if idx < len(px_list) - 5:
             p1 = px_list[idx]
-            p2 = px_list[idx + 6]
+            p2 = px_list[idx + 5]
             dx = p2[0] - p1[0]
             dy = p2[1] - p1[1]
             dist = math.hypot(dx, dy)
@@ -206,17 +195,11 @@ def draw_arrows(px_list, color, fractions, size=15):
                 tip = p2
                 left_w = (tip[0] - size * ux + size * 0.55 * vx, tip[1] - size * uy + size * 0.55 * vy)
                 right_w = (tip[0] - size * ux - size * 0.55 * vx, tip[1] - size * uy - size * 0.55 * vy)
-                
-                # Solid dark backing outline for high visibility in dark mode
-                b_tip = (tip[0] + 2.0 * ux, tip[1] + 2.0 * uy)
-                b_left = (tip[0] - (size + 3) * ux + (size + 3) * 0.65 * vx, tip[1] - (size + 3) * uy + (size + 3) * 0.65 * vy)
-                b_right = (tip[0] - (size + 3) * ux - (size + 3) * 0.65 * vx, tip[1] - (size + 3) * uy - (size + 3) * 0.65 * vy)
-                draw.polygon([b_tip, b_left, b_right], fill=(0, 0, 0, 240))
                 draw.polygon([tip, left_w, right_w], fill=color)
 
-draw_arrows(nsr_px, NSR_COLOR, [0.08, 0.22, 0.48, 0.70, 0.88], size=15)
-draw_arrows(suez_px, SUEZ_COLOR, [0.15, 0.45, 0.75], size=14)
-draw_arrows(cape_px, CAPE_COLOR, [0.18, 0.42, 0.65, 0.85], size=14)
+draw_arrows(nsr_px, NSR_COLOR, [0.08, 0.22, 0.48, 0.70, 0.88], size=13)
+draw_arrows(suez_px, SUEZ_COLOR, [0.15, 0.45, 0.75], size=12)
+draw_arrows(cape_px, CAPE_COLOR, [0.18, 0.42, 0.65, 0.85], size=12)
 
 # 5. Route Ports and Markers
 # Jakarta

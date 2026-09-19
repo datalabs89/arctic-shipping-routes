@@ -137,21 +137,7 @@ canvas[disk_mask] = ft_texture[disk_mask]
 
 base_img = Image.fromarray(np.clip(canvas, 0, 255).astype(np.uint8), mode="RGB")
 
-# 2B. Globe Outer Border and Subtle Shadow (FT Clean Graphic Look)
-# Create a soft drop shadow under the globe
-shadow_img = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
-shadow_draw = ImageDraw.Draw(shadow_img)
-shadow_draw.ellipse([CX - RADIUS + 4, CY - RADIUS + 8, CX + RADIUS + 4, CY + RADIUS + 8],
-                    fill=(180, 160, 145, 100))
-shadow_blurred = shadow_img.filter(ImageFilter.GaussianBlur(14))
-
-# Composite shadow with background
-bg_full = Image.new("RGBA", (WIDTH, HEIGHT), (255, 241, 229, 255))
-bg_full.paste(shadow_blurred, (0, 0), shadow_blurred)
-bg_full.paste(base_img, (0, 0))
-base_img = bg_full.convert("RGB")
-
-# Crisp globe outer rim
+# 2B. Crisp globe outer rim (No shadow or halo effects)
 rim_draw = ImageDraw.Draw(base_img)
 rim_draw.ellipse([CX - RADIUS, CY - RADIUS, CX + RADIUS, CY + RADIUS],
                  outline=(165, 150, 138), width=2)
@@ -245,27 +231,19 @@ FT_RED = (205, 18, 55, 255)       # Solid FT Claret / Crimson for Northern Sea R
 FT_NAVY = (12, 80, 142, 255)      # Solid FT Deep Blue for Suez Route
 FT_AMBER = (218, 105, 18, 255)    # Solid FT Burnt Ochre/Amber for Cape Route
 
-# Draw solid routes with crisp opaque white casing underneath for maximum contrast and solidity
-def draw_cased_route(px_list, color, width=7, casing_width=11):
-    if len(px_list) < 2:
-        return
-    # Continuous opaque white casing
-    draw.line(px_list, fill=(255, 255, 255, 255), width=casing_width, joint="curve")
-    # Continuous solid core line
-    draw.line(px_list, fill=color, width=width, joint="curve")
+# Flat solid route lines (No glow, no casing, no effects)
+ROUTE_WIDTH = 5
+draw.line(cape_px, fill=FT_AMBER, width=ROUTE_WIDTH, joint="curve")
+draw.line(suez_px, fill=FT_NAVY, width=ROUTE_WIDTH, joint="curve")
+draw.line(nsr_px, fill=FT_RED, width=ROUTE_WIDTH, joint="curve")
 
-# Draw in order: Cape -> Suez -> Northern Sea Route (NSR on top)
-draw_cased_route(cape_px, FT_AMBER, width=7, casing_width=11)
-draw_cased_route(suez_px, FT_NAVY, width=7, casing_width=11)
-draw_cased_route(nsr_px, FT_RED, width=8, casing_width=12)
-
-# Directional arrows helper with solid contrast backing
-def draw_arrows(px_list, color, fractions, size=15):
+# Clean directional arrows helper without backing or outlines
+def draw_arrows(px_list, color, fractions, size=13):
     for f in fractions:
         idx = int(len(px_list) * f)
-        if idx < len(px_list) - 6:
+        if idx < len(px_list) - 5:
             p1 = px_list[idx]
-            p2 = px_list[idx + 6]
+            p2 = px_list[idx + 5]
             dx = p2[0] - p1[0]
             dy = p2[1] - p1[1]
             dist = math.hypot(dx, dy)
@@ -275,17 +253,11 @@ def draw_arrows(px_list, color, fractions, size=15):
                 tip = p2
                 left_w = (tip[0] - size * ux + size * 0.55 * vx, tip[1] - size * uy + size * 0.55 * vy)
                 right_w = (tip[0] - size * ux - size * 0.55 * vx, tip[1] - size * uy - size * 0.55 * vy)
-                
-                # Solid white backing for the arrowhead
-                b_tip = (tip[0] + 2.0 * ux, tip[1] + 2.0 * uy)
-                b_left = (tip[0] - (size + 3) * ux + (size + 3) * 0.65 * vx, tip[1] - (size + 3) * uy + (size + 3) * 0.65 * vy)
-                b_right = (tip[0] - (size + 3) * ux - (size + 3) * 0.65 * vx, tip[1] - (size + 3) * uy - (size + 3) * 0.65 * vy)
-                draw.polygon([b_tip, b_left, b_right], fill=(255, 255, 255, 255))
                 draw.polygon([tip, left_w, right_w], fill=color)
 
-draw_arrows(nsr_px, FT_RED, [0.08, 0.22, 0.48, 0.70, 0.88], size=15)
-draw_arrows(suez_px, FT_NAVY, [0.15, 0.45, 0.75], size=14)
-draw_arrows(cape_px, FT_AMBER, [0.18, 0.42, 0.65, 0.85], size=14)
+draw_arrows(nsr_px, FT_RED, [0.08, 0.22, 0.48, 0.70, 0.88], size=13)
+draw_arrows(suez_px, FT_NAVY, [0.15, 0.45, 0.75], size=12)
+draw_arrows(cape_px, FT_AMBER, [0.18, 0.42, 0.65, 0.85], size=12)
 
 # 5. Route Ports and Markers
 # Jakarta
